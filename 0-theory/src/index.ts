@@ -1,96 +1,89 @@
-import { defer, filter, from, iif, interval, map, of, range, skip, take, tap } from 'rxjs';
-import { terminalLog } from '../../utils/log-in-terminal';
+import { filter, interval, map, Observable, pipe, skip, Subscriber, take, takeUntil } from 'rxjs';
 import '../../assets/css/style.css';
-import { ajax, AjaxResponse } from "rxjs/ajax";
+import { terminalLog } from '../../utils/log-in-terminal';
 
-// of(1, 2, 3)
-//     .subscribe((v) => {
+// function doNothing<T>(source: Observable<T>) {
+//     return source;
+// }
+//
+// function toText<T>(source: Observable<T>) {
+//     return new Observable((subscriber => {
+//         subscriber.next('Rx JS Awesome');
+//         subscriber.complete();
+//     }));
+// }
+//
+
+// function double(source: Observable<any>) {
+//     return new Observable(subscriber => {
+//         source.subscribe({
+//             next: (v) => subscriber.next(v * 2),
+//             error: (e) => subscriber.error(e),
+//             complete: () => subscriber.complete(),
+//         })
+//     })
+// }
+//
+//
+// interval(2000)
+//     .pipe(
+//         skip(2),
+//         double,
+//         take(2)
+//     )
+//     .subscribe({
+//         next: (v: any) => {
+//             terminalLog(v);
+//         }, complete: () => terminalLog('Completed')
+//     })
+
+//
+// const o$ = new Observable();
+// o$.source = interval(1000);
+// o$.operator = {
+//     call(subscriber: Subscriber<any>, source: any) {
+//         source.subscribe(subscriber)
+//     }
+// }
+//
+// o$.subscribe((v: any) => {
+//     terminalLog(v);
+// })
+
+// class DoubleSubscriber extends Subscriber<any> {
+//     override next(value: any) {
+//         super.next(value * 2);
+//     }
+// }
+//
+// const double = (source: Observable<any>) => {
+//     return source.lift({
+//         call(subscriber: Subscriber<any>, source: any) {
+//             source.subscribe(new DoubleSubscriber(subscriber))
+//         }
+//     })
+// }
+
+
+// interval(1000)
+//     .pipe(double)
+//     .subscribe((v: any) => {
 //         terminalLog(v);
 //     })
 
-// const request = fetch('http://learn.javascript.ru/courses/groups/api/participants?key=1g74qlq')
-//     .then((res)=>res.json())
-//
-// from(request)
-//     .subscribe((v) => {
-//         console.log(v);
-//     })
+
+// const groupOperators = (...fns: Function[]) => (source: Observable<any>) => fns.reduce((s, fn) => fn(s), source);
+
+const myOperator = pipe(map((x: any) => x * 2), filter((x: any) => x % 3 === 0));
 
 
-// const request = fetch('http://learn.javascript.ru/courses/groups/api/participants?key=1g74qlq')
-//     .then((res) => res.json())
-//
-// ajax({
-//     url: 'http://learn.javascript.ru/courses/groups/api/participants?key=1g74qlq',
-//     method: 'GET',
-//     crossDomain: true
-// })
-//     .subscribe((res: AjaxResponse<any>) => {
-//         console.log(res.response);
-//     })
+interval(1000)
+    .pipe(myOperator)
+    .subscribe((v) => terminalLog(v))
 
-
-// range(1, 10)
-//     .subscribe((v) => {
-//         terminalLog(v);
-//     })
-//
-
-// const random = Math.round(Math.random() * 10);
-// console.log(random);
-// iif(() => {
-//     return random > 5;
-// }, of('First sequence'), of('Second sequence'))
-//     .subscribe((v) => {
-//         console.log(v);
-//     })
-
-
-// const random = Math.round(Math.random() * 10);
-// console.log(random);
-// defer(() => {
-//   return   random > 5
-//         ? of('First sequence')
-//         : random > 2
-//         ? of('Second sequence')
-//         : of('Third sequence');
-// })
-//     .subscribe((v) => {
-//         console.log(v);
-//     })
-
-const sequence1$ = interval(1000);
 
 /*
-   sequence1$  ---0---1---2---3---4---5---6---7---
-           tap((x)=>{console.log(x); return 0})
-               ---0---1---2---3---4---5---6---7---
-           filter((x)=>x%3 ===0)
-               ---0-----------3-----------6-------
-           map((x)=> x*2)
-               ---0-----------6-----------12------
-           skip(1);
-               ---------------6-----------12------
-           take(2)
-               ---------------6-----------12|
+  --1--2--3--4--5--6--7--8--9--
+  skipLimit(2,2)
+  --------3--4--------7--8----
  */
-
-
-sequence1$
-    .pipe(
-        tap((x) => {
-            console.log(x);
-            return 0
-        }),
-        filter((x) => x % 3 === 0),
-        map((x) => x * 2),
-        skip(1),
-        take(2)
-    )
-    .subscribe({
-        next: (v) => {
-            terminalLog(v);
-        }, complete: () => {
-            terminalLog('Completed')
-        }
-    })
