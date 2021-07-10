@@ -1,133 +1,96 @@
-import '../../assets/css/style.css'
+import { defer, filter, from, iif, interval, map, of, range, skip, take, tap } from 'rxjs';
 import { terminalLog } from '../../utils/log-in-terminal';
-import { interval, Observable, pluck, Subscriber, Subscription } from 'rxjs';
-// Subject = Observable + Observer
-terminalLog('Теория')
+import '../../assets/css/style.css';
+import { ajax, AjaxResponse } from "rxjs/ajax";
 
-// const sequence = new Promise<number>((res) => {
-//     let count = 1;
-//     setInterval(() => {
-//         res(count++);
-//     }, 1000)
-// });
-//
-// sequence.then((v) => terminalLog(v.toString()));
-// sequence.then((v) => terminalLog(v.toString()));
-// sequence.then((v) => terminalLog(v.toString()));
-
-
-// const sequence = function* () {
-//     let count = 1;
-//     while (true) {
-//         yield  count++;
-//     }
-// }();
-//
-// terminalLog(sequence.next().value.toString());
-// terminalLog(sequence.next().value.toString());
-// terminalLog(sequence.next().value.toString());
-// terminalLog(sequence.next().value.toString());
-// terminalLog(sequence.next().value.toString());
-// terminalLog(sequence.next().value.toString());
-
-//
-// interval(1000)
-//     .subscribe({
-//         next: (v) => {
-//             terminalLog(v.toString());
-//         }
+// of(1, 2, 3)
+//     .subscribe((v) => {
+//         terminalLog(v);
 //     })
 
-// let count = 1;
+// const request = fetch('http://learn.javascript.ru/courses/groups/api/participants?key=1g74qlq')
+//     .then((res)=>res.json())
 //
-// const sequence$ = new Observable((subscriber: Subscriber<number>) => {
-//     terminalLog('Observable init');
-//     const intId = setInterval(() => {
-//         console.log(count);
-//         if (count % 5 === 0) {
-//             clearInterval(intId);
-//             subscriber.complete();
-//         }
-//         subscriber.next(count++);
-//     }, 1000)
-//
-//     return () => {
-//         terminalLog('UnSubscribe');
-//         clearInterval(intId);
-//     }
-// });
-//
-// let sub: Subscription;
-// setTimeout(() => {
-//     sub = sequence$.subscribe({
-//         next: (v) => {
-//             terminalLog(`Sub 1 ${v}`);
-//         },
-//         complete: () => {
-//             terminalLog('Completed');
-//         }
+// from(request)
+//     .subscribe((v) => {
+//         console.log(v);
 //     })
-// }, 5000)
-// setTimeout(() => {
-//     sequence$.subscribe({
-//         next: (v) => {
-//             terminalLog(`Sub 2 ${v}`);
-//         },
-//         complete: () => {
-//             terminalLog('Completed');
-//         }
-//     });
-// }, 7000)
-// setTimeout(() => {
-//     sub.unsubscribe();
-// }, 9000)
+
+
+// const request = fetch('http://learn.javascript.ru/courses/groups/api/participants?key=1g74qlq')
+//     .then((res) => res.json())
+//
+// ajax({
+//     url: 'http://learn.javascript.ru/courses/groups/api/participants?key=1g74qlq',
+//     method: 'GET',
+//     crossDomain: true
+// })
+//     .subscribe((res: AjaxResponse<any>) => {
+//         console.log(res.response);
+//     })
+
+
+// range(1, 10)
+//     .subscribe((v) => {
+//         terminalLog(v);
+//     })
 //
 
-
-const socket: WebSocket = new WebSocket('wss://echo.websocket.org');
-
-const sequence$ = new Observable((subscriber: Subscriber<any>) => {
-    function listener(e: Event) {
-        subscriber.next(e);
-    }
-
-    socket.addEventListener('message', listener);
-    return () => {
-        socket.removeEventListener('message', listener);
-    }
-});
-
-socket.addEventListener('open', main)
+// const random = Math.round(Math.random() * 10);
+// console.log(random);
+// iif(() => {
+//     return random > 5;
+// }, of('First sequence'), of('Second sequence'))
+//     .subscribe((v) => {
+//         console.log(v);
+//     })
 
 
-function main() {
-    let count = 0;
-    debugger;
-    setInterval(() => {
-        socket.send((count++).toString());
-    }, 2000);
+// const random = Math.round(Math.random() * 10);
+// console.log(random);
+// defer(() => {
+//   return   random > 5
+//         ? of('First sequence')
+//         : random > 2
+//         ? of('Second sequence')
+//         : of('Third sequence');
+// })
+//     .subscribe((v) => {
+//         console.log(v);
+//     })
 
-    const sub1 = sequence$
-        .pipe(pluck('data'))
-        .subscribe({
-            next: (v) => {
-                terminalLog(`Sub 1 ==> ${v}`);
-            },
-            complete: () => {
-                terminalLog('Completed');
-            }
-        })
+const sequence1$ = interval(1000);
 
-    setTimeout(() => {
-        const sub2 = sequence$
-            .pipe(pluck('data'))
-            .subscribe({
-                next: (v) => {
-                    terminalLog(`Sub 2 ==> ${v}`);
-                },
-                complete: () => {
-                    terminalLog('Completed');
-                }
-            })
-    }, 5000)
-}
+/*
+   sequence1$  ---0---1---2---3---4---5---6---7---
+           tap((x)=>{console.log(x); return 0})
+               ---0---1---2---3---4---5---6---7---
+           filter((x)=>x%3 ===0)
+               ---0-----------3-----------6-------
+           map((x)=> x*2)
+               ---0-----------6-----------12------
+           skip(1);
+               ---------------6-----------12------
+           take(2)
+               ---------------6-----------12|
+ */
+
+
+sequence1$
+    .pipe(
+        tap((x) => {
+            console.log(x);
+            return 0
+        }),
+        filter((x) => x % 3 === 0),
+        map((x) => x * 2),
+        skip(1),
+        take(2)
+    )
+    .subscribe({
+        next: (v) => {
+            terminalLog(v);
+        }, complete: () => {
+            terminalLog('Completed')
+        }
+    })
