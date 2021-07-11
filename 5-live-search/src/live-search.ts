@@ -1,8 +1,8 @@
 import {
-    bufferCount,
+    bufferCount, catchError,
     concatAll,
     debounceTime,
-    distinctUntilChanged,
+    distinctUntilChanged, EMPTY,
     filter,
     fromEvent,
     map, Observable, reduce,
@@ -46,7 +46,8 @@ export function request(source$: Observable<AjaxResponse<IRes>>): Observable<str
             reduce((resultStr: string, htmlStr: string[]) => {
                 return resultStr += createRow(htmlStr)
             }, ''),
-            map((htmlStr: string) => htmlStr.trim().replace(/\s+(<)/g, '<'))
+            map((htmlStr: string) => htmlStr.trim().replace(/\s+(<)/g, '<')),
+            catchError(error => EMPTY)
         )
 }
 
