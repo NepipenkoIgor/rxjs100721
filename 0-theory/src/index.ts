@@ -1,44 +1,38 @@
 import '../../assets/css/style.css';
-import { catchError, delay, EMPTY, interval, map, of, retry, retryWhen, switchMap, tap, zip } from 'rxjs';
 import { terminalLog } from '../../utils/log-in-terminal';
+import { connectable, ConnectableObservable, interval, multicast, publish, refCount, share, Subject } from 'rxjs';
 
-const sequence1$ = interval(1000);
-const sequence2$ = of('1', '2', '3', 4, '5', '6', '7');
+// const sequence = interval(1000)
+//     .pipe(
+//         share()
+//     );
 
-const sequence$ = zip(sequence1$, sequence2$);
+// const sequence = connectable(interval(1000), {
+//     connector: ()=> new Subject()
+// })
 
-// sequence$.pipe(
-//     map(([, y]) => {
-//         return (y as any).toUpperCase();
-//         // try {
-//         //     return (y as any).toUpperCase();
-//         // } catch (err) {
-//         //     return 'N'
-//         // }
-//     }),
-//     // tap(()=> terminalLog('before catch')),
-//     // retry(3),
-//     retryWhen((errors)=> errors.pipe(delay(3000))),
-//     catchError((err, obs)=>{
-//         return  obs;
-//     }),
-//     // tap(()=> terminalLog('after catch'))
-// )
-sequence$.pipe(
-    switchMap(([, y]) => {
-        return of(y)
-            .pipe(
-                map((y) => {
-                    return (y as any).toUpperCase();
-                }),
-                catchError((err, obs) => {
-                    return EMPTY;
-                }),
-            )
-    }),
-)
-    .subscribe({
-        next: (v) => terminalLog(v),
-        error: (err) => console.log(err),
-        complete: () => terminalLog('Completed')
+const sequence = interval(1000)
+    .pipe(share({
+        connector: () => new Subject(),
+        resetOnRefCountZero: false
+    }))
+
+const sub = sequence
+    .subscribe((v) => {
+        terminalLog(`Sub1 => ${v}`);
     })
+
+setTimeout(() => {
+    sub.unsubscribe();
+}, 3000)
+
+setTimeout(() => {
+    sequence
+        .subscribe((v) => {
+            terminalLog(`Sub2 => ${v}`);
+        })
+}, 5000)
+
+// setInterval(() => {
+//     sequence.connect();
+// }, 2000)
