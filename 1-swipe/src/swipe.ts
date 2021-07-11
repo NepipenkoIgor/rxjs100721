@@ -13,7 +13,7 @@ const touchEnd$ = getX(
         fromEvent<MouseEvent>(document, 'mouseup'),
     ));
 
-function getX(source$: Observable<TouchEvent | MouseEvent>): Observable<number> {
+export function getX(source$: Observable<TouchEvent | MouseEvent>): Observable<number> {
     return source$
         .pipe(
             map((e: TouchEvent | MouseEvent) => {
@@ -25,7 +25,7 @@ function getX(source$: Observable<TouchEvent | MouseEvent>): Observable<number> 
         )
 }
 
-function swipe(source1$: Observable<number>, source2$: Observable<number>) {
+export function swipe(source1$: Observable<number>, source2$: Observable<number>) {
     return source1$.pipe(
         zipWith(source2$),
         map(([startX, endX]: [number, number]) => {
